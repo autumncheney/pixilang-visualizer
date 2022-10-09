@@ -1,2 +1,18 @@
-# pixilang-visualizer
-simple music visualizer made using pixilang
+# abstract
+this is a simple music visualizer made in pixilang using nightradio's demo library
+
+it uses a few media files, including two logos and a cover (all `.png` files) and the `.wav` file to be visualized. it takes these and produces a video the length of the audio file, with a spectrum, flashing background, and transition effects at the beginning and end of the song.
+
+just replace the files (and change the config section if necessary) and be on your merry way! if you're on a *nix os with ffmpeg, you can uncomment the `demo_video_export` to produce a video file to upload wherever
+
+# how to use
+
+1. clone this repository and unarchive it
+2. replace the media files, the ones in this repo are placeholders
+3. if necessary, edit the `boot.pixi` and change the config variables (everything between `-- CONFIG BEGIN --` and `-- END CONFIG --`) to your liking. everything has comments explaining what they do. i'll probably add more variables to customize in the future
+4. grab pixilang from [here](https://warmplace.ru/soft/pixilang/) and run the binary for your operating system. it's free (at least for desktop operating systems)
+5. in pixilang, navigate to where you extracted the repo and run the `boot.pixi` file
+6. enjoy!
+
+# credits
+the main visualizer was written by me, with help from nightradio, silent broadcast, and others. the other pixilang libraries were written by nightradio and are under the mit license. the stock assets were also made by me
