@@ -11,10 +11,10 @@ include "demo.pixi"
 // use opengl (could improve performance and make everything look smoother) (0 = false, 1 = true)
 demo_opengl = 1
 
-// demo width
+// demo width in pixels
 demo_xsize = 1920
 
-// demo height
+// demo height in pixels
 demo_ysize = 1080
 
 // demo video export filename, comment it out if you don't want to export
@@ -28,7 +28,7 @@ demo_video_export_q = 80
 
 // -- FFT/VISUALIZER CONFIG --
 
-// fft size (best to keep this a power of 2)
+// fft size (must be a power of 2)
 fft_size = 2048
 
 // visualizer minimum midi pitch
@@ -40,18 +40,21 @@ vis_max_pitch = 135
 // visualizer floor in decibels (everything below this is cut out)
 vis_floor = 80
 
+// visualizer smoothing factor
+vis_smooth = 4
+
 // visualizer horizontal scale
 vis_scale = 8
 
-// visualizer enter time delay
+// visualizer enter time delay in ms
 vis_delay = 2000
 
-// visualizer enter time
+// visualizer enter time in ms
 vis_time = 1000
 
 // -- EXIT TIME CONFIG --
 
-// time for everything to fade out (this divided by 3 is the amount of time for each element to fade out)
+// time for everything to fade out in ms (this divided by 3 is the amount of time for each element to fade out)
 all_exit = 3000
 
 // -- LOGO CONFIG --
@@ -59,10 +62,10 @@ all_exit = 3000
 // logo size scale
 logo_scale = 0.25
 
-// logo enter time delay
+// logo enter time delay in ms
 logo_delay = 1000
 
-// logo enter time
+// logo enter time in ms
 logo_time = 1000
 
 // -- ARTIST CONFIG --
@@ -70,10 +73,10 @@ logo_time = 1000
 // artist size scale
 artist_scale = 0.25
 
-// artist enter time
+// artist enter time in ms
 artist_time = 1000
 
-// artist exit time
+// artist exit time in ms
 artist_exit = 1000
 
 // -- COVER CONFIG --
@@ -97,6 +100,7 @@ fft_im = new( fft_size, 1, FLOAT )
 fft_re = new( fft_size, 1, FLOAT )
 fft_im2 = new( fft_size, 1, FLOAT )
 fft_re2 = new( fft_size, 1, FLOAT )
+fft_db = new( fft_size, 1, FLOAT )
 
 cover_xsize = get_xsize(cover)
 cover_ysize = get_ysize(cover)
@@ -161,7 +165,11 @@ fn vis_render($t1)
 	v = sqrt( v )
 
         v = 20 * log10( v )
-	fft_db[ i ] = v
+        
+        old_v = fft_db[ i ]
+        
+	fft_db[ i ] = old_v + (v - old_v) * (1 / vis_smooth)
+        
 	i = i + 1
     }
 
