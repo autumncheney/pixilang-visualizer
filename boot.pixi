@@ -1,0 +1,283 @@
+// pixilang-based music visualizer
+// by acheney (with help from nightradio, silent broadcast, and others)
+// under mit license 
+
+include "demo.pixi"
+
+// - CONFIG BEGIN -
+
+// -- DEMO LIB CONFIG --
+
+// use opengl (could improve performance and make everything look smoother) (0 = false, 1 = true)
+demo_opengl = 1
+
+// demo width
+demo_xsize = 1920
+
+// demo height
+demo_ysize = 1080
+
+// demo video export filename, comment it out if you don't want to export
+//demo_video_export = "video.avi"
+
+// demo video export fps (frames per second)
+demo_video_export_fps = 0
+
+// demo video export quality (0 - 100)
+demo_video_export_q = 80
+
+// -- FFT/VISUALIZER CONFIG --
+
+// fft size (best to keep this a power of 2)
+fft_size = 2048
+
+// visualizer minimum midi pitch
+vis_min_pitch = 21
+
+// visualizer maximum midi pitch
+vis_max_pitch = 135
+
+// visualizer floor in decibels (everything below this is cut out)
+vis_floor = 80
+
+// visualizer horizontal scale
+vis_scale = 8
+
+// visualizer enter time delay
+vis_delay = 2000
+
+// visualizer enter time
+vis_time = 1000
+
+// -- EXIT TIME CONFIG --
+
+// time for everything to fade out (this divided by 3 is the amount of time for each element to fade out)
+all_exit = 3000
+
+// -- LOGO CONFIG --
+
+// logo size scale
+logo_scale = 0.25
+
+// logo enter time delay
+logo_delay = 1000
+
+// logo enter time
+logo_time = 1000
+
+// -- ARTIST CONFIG --
+
+// artist size scale
+artist_scale = 0.25
+
+// artist enter time
+artist_time = 1000
+
+// artist exit time
+artist_exit = 1000
+
+// -- COVER CONFIG --
+
+// cover gaussian blur radius
+cover_blur_rad = 20
+
+// cover brightness scale 
+cover_brightness = 0.5
+
+// - END CONFIG - 
+
+demo_load_wav( "media/song.wav" )
+cover = load( "media/cover.png" )
+logo = load("media/logo.png")
+artist = load("media/artist.png")
+
+demo_length = 0
+
+fft_im = new( fft_size, 1, FLOAT )
+fft_re = new( fft_size, 1, FLOAT )
+fft_im2 = new( fft_size, 1, FLOAT )
+fft_re2 = new( fft_size, 1, FLOAT )
+
+cover_xsize = get_xsize(cover)
+cover_ysize = get_ysize(cover)
+cover_size = cover_xsize * cover_ysize
+cover_src = clone(cover)
+
+logo_xsize = get_xsize(logo)
+logo_ysize = get_ysize(logo)
+
+artist_xsize = get_xsize(artist)
+artist_ysize = get_ysize(artist)
+
+demo_init()
+custom_init()
+
+demo_add_scene( 0, 0, 0, view )
+demo_add_scene( 0, 1, demo_sound_len, DEMO_STOP )
+
+demo_play()
+demo_deinit()
+
+fn view( $t1, $t2, $len )
+{
+    clear( #000000 )
+    
+    cover_render($t1)
+    vis_render($t1)
+    artist_render($t1)
+    logo_render($t1)
+
+    transp(255)
+}
+
+fn vis_render($t1)
+{
+    rel_time = max($t1, vis_delay) - vis_delay
+    exit_point = demo_length - ((2 * all_exit) / 3)
+    rel_time_end = max($t1, exit_point) - exit_point
+
+    speed_enter = 255 / vis_time
+    speed_exit = 255 / (all_exit / 3)
+    trans = min(255 - (rel_time_end * speed_exit), min(rel_time * speed_enter, 255)) 
+    transp(trans)
+
+    t_scale(vis_scale, 1, 1)
+    width = (vis_max_pitch - vis_min_pitch)
+    
+    t_translate(-(width / 2), ((demo_ysize / 3) - vis_floor) , 0)
+    i = 0 while i < fft_size {
+	
+	v = demo_sound_pcm_stream[ (demo_sound_pcm_stream_ptr + i) * demo_sound_channels ] / 256
+	win = sin( M_PI * i / fft_size )
+	fft_re[i] = v * win
+	fft_im[i] = 0
+	i = i + 1
+    }
+
+    fft(0, fft_im, fft_re)
+
+    i = 0 while i < (fft_size / 2) {
+	v = fft_re[ i ] * fft_re[ i ] + fft_im[ i ] * fft_im[ i ]
+	v = sqrt( v )
+
+        v = 20 * log10( v )
+	fft_db[ i ] = v
+	i = i + 1
+    }
+
+    bin_width = demo_sound_rate / fft_size
+
+    p = vis_min_pitch
+    while p < vis_max_pitch {
+	f = pow( 2, p / 12) * 8.175799
+	bin = f / bin_width
+	idx = floor( bin )
+	frac = bin - idx
+	dB = ( 1 - frac ) * fft_db[ idx ] + frac * fft_db[ idx +1 ]
+	
+        if (dB >= -vis_floor) {
+	    line( (p - vis_min_pitch), vis_floor, (p - vis_min_pitch), -dB, WHITE)
+	}
+	
+	p = p + (1 / vis_scale)
+    }
+
+    t_reset()
+
+    
+}
+
+fn cover_render($t1) {
+
+    exit_point = demo_length - all_exit
+    rel_time = max($t1, exit_point) - exit_point
+    speed = 255 / (all_exit / 3)
+    trans = min(255 - (rel_time * speed), 255) 
+    transp(trans)
+
+    base = 255 * cover_brightness
+    flash = base * (abs(demo_sound_pcm_stream[demo_sound_pcm_stream_ptr * demo_sound_channels]) + 1)
+    pixi(cover, 0, 0, get_color(flash, flash, flash), ((demo_xsize / cover_xsize)), ((demo_xsize / cover_xsize)))
+
+}
+
+fn logo_render($t1) {
+
+    exit_point = demo_length - (all_exit / 3)
+    rel_time = max($t1, exit_point) - exit_point
+    speed = 255 / (all_exit / 3)
+    trans = min(255 - (rel_time * speed), 255) 
+    transp(trans)
+
+    rel_time = max($t1, logo_delay) - logo_delay
+    speed = demo_ysize / logo_time
+    perc = min(((rel_time * speed) / demo_ysize), 1)
+    perc_curved = (atan(((2 * perc) - 1)*10)/(M_PI/2)/2 + 0.5) + 0.032765
+    pixi(logo, 0, ((1 - perc_curved) * demo_ysize), WHITE, logo_scale, logo_scale)
+}
+
+fn artist_render($t1) {
+
+    transp(255)
+
+    rel_time = max($t1, artist_time) - artist_time
+    speed = demo_ysize / artist_exit
+    perc = min(((rel_time * speed) / demo_ysize), 1)
+    perc_curved = (atan(((2 * perc) - 1)*10)/(M_PI/2)/2 + 0.5) - 0.032765
+    pixi(artist, 0, perc_curved * -demo_ysize, WHITE, logo_scale, logo_scale)
+}
+
+fn custom_init()
+{
+    //gaussian blur
+
+    sigma = max((cover_blur_rad / 2), 1)
+
+    kernel_width = (2 * cover_blur_rad) + 1
+
+    kernel = new(kernel_width, kernel_width, FLOAT)
+
+    sum = 0
+
+    for (x = -cover_blur_rad ; x <= cover_blur_rad ; x + 1) {
+	for (y = -cover_blur_rad ; y <= cover_blur_rad ; y + 1) {
+	    exp_num = -(x * x + y * y)
+	    exp_dem = 2 * sigma * sigma
+	    expression = pow(M_E, exp_num / exp_dem)
+	    ker_val = (expression / (2 * M_PI * sigma * sigma))
+
+	    kernel[(x + cover_blur_rad), (y + cover_blur_rad)] = ker_val
+	    sum = sum + ker_val
+	}
+     }
+
+    FIXED_POINT_MUL = 32768
+    for (x = 0 ; x < kernel_width ; x + 1) {
+        for (y = 0 ; y < kernel_width ; y + 1) {
+	    kernel[x, y] = kernel[x, y] / sum * FIXED_POINT_MUL
+        }
+    }
+
+    convert_type( kernel, INT )
+    conv_filter( cover, cover_src, kernel, FIXED_POINT_MUL, 0, CONV_FILTER_COLOR )
+
+    demo_length = (demo_sound_len / demo_sound_rate) * 1000
+}
+
+fn max($a, $b) {
+	if ($a >= $b) {
+		ret($a)
+	} else {
+		ret($b)
+	}
+}
+
+fn min($a, $b) {
+	if ($a < $b) {
+		ret($a)
+	} else {
+		ret($b)
+	}
+}
+
+show_memory_debug_messages( 1 )
