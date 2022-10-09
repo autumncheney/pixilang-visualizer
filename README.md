@@ -8,7 +8,7 @@ just replace the files (and change the config section if necessary) and be on yo
 # how to use
 
 1. clone this repository and unarchive it
-2. replace the media files, the ones in this repo are placeholders
+2. replace the media files, the ones in this repo are placeholders. the `artist.png` is the logo shown first, the `logo.png` is shown second. in one use case, if you're a label, the `logo.png` is your logo and the `artist.png` is your artist's logo. the `song.wav` is the audio to be visualized, and the `cover.png` is the cover art for the audio
 3. if necessary, edit the `boot.pixi` and change the config variables (everything between `-- CONFIG BEGIN --` and `-- END CONFIG --`) to your liking. everything has comments explaining what they do. i'll probably add more variables to customize in the future
 4. grab pixilang from [here](https://warmplace.ru/soft/pixilang/) and run the binary for your operating system. it's free (at least for desktop operating systems)
 5. in pixilang, navigate to where you extracted the repo and run the `boot.pixi` file
