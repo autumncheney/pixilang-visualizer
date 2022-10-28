@@ -19,4 +19,4 @@ the main visualizer was written by me, with help from nightradio, silent broadca
 
 ## note
 
-`ffmpeg_video_export.pixi` was modified to record at a bitrate of 50000 to preserve quality, but you can change it to whatever you need, it's on line 24. 
+`ffmpeg_video_export.pixi` was modified to record at a bitrate of 50000 to preserve quality, but you can change it to whatever you need, it's on line 24
