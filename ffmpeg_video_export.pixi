@@ -21,7 +21,7 @@ fn ffmpeg_video_export_thread( $thread_id, $ff )
     }
     else
     {
-	sprintf( $vcodec, "-vcodec libx264 -b:v 2000k -preset fast" )
+	sprintf( $vcodec, "-vcodec libx264 -b:v 50000k -preset medium" )
     }
     sprintf( 
 	$ts, 

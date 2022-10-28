@@ -18,13 +18,13 @@ demo_xsize = 1920
 demo_ysize = 1080
 
 // demo video export filename, comment it out if you don't want to export
-//demo_video_export = "video.avi"
+demo_video_export = "video.mkv"
 
 // demo video export fps (frames per second)
-demo_video_export_fps = 0
+demo_video_export_fps = 60
 
 // demo video export quality (0 - 100)
-demo_video_export_q = 80
+demo_video_export_q = 100
 
 // -- FFT/VISUALIZER CONFIG --
 
@@ -117,7 +117,7 @@ demo_init()
 custom_init()
 
 demo_add_scene( 0, 0, 0, view )
-demo_add_scene( 0, 1, demo_sound_len, DEMO_STOP )
+demo_add_scene( 0, 1, demo_sound_len + 50000, DEMO_STOP )
 
 demo_play()
 demo_deinit()
