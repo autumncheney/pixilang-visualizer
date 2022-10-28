@@ -17,4 +17,6 @@ just replace the files (and change the config section if necessary) and be on yo
 # credits
 the main visualizer was written by me, with help from nightradio, silent broadcast, and others. the other pixilang libraries were written by nightradio and are under the mit license. the stock assets were also made by me
 
-note: `ffmpeg_video_export.pixi` was modified to record at a bitrate of 50000 to preserve quality, but you can change it to whatever you need, it's on line 24. also, the ending is delayed slightly to compensate for a bug in pixilang (you can change the delay on line 120 in `boot.pixi`)
+## note
+
+`ffmpeg_video_export.pixi` was modified to record at a bitrate of 50000 to preserve quality, but you can change it to whatever you need, it's on line 24. 
