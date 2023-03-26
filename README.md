@@ -1,3 +1,5 @@
+# NOTICE: this github repository has been archived. the newest updates can be downloaded from from [my gitea repo](https://git.acheney.xyz/acheney/pixilang-visualizer)
+
 # abstract
 this is a simple music visualizer made in pixilang using nightradio's demo library
 
